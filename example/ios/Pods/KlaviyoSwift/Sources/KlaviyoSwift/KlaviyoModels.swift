@@ -11,18 +11,10 @@ import Foundation
 public struct Event: Equatable {
     public enum EventName: Equatable {
         case OpenedPush
-        case ViewedProduct
-        case SearchedProducts
-        case StartedCheckout
-        case PlacedOrder
-        case OrderedProduct
-        case CancelledOrder
-        case PaidForOrder
-        case SubscribedToBackInStock
-        case SubscribedToComingSoon
-        case SubscribedToList
-        case SuccessfulPayment
-        case FailedPayment
+        case OpenedAppMetric
+        case ViewedProductMetric
+        case AddedToCartMetric
+        case StartedCheckoutMetric
         case CustomEvent(String)
     }
 
@@ -34,13 +26,13 @@ public struct Event: Equatable {
         }
     }
 
-    public struct Identifiers: Equatable {
+    struct Identifiers: Equatable {
         public let email: String?
         public let phoneNumber: String?
         public let externalId: String?
-        init(email: String? = nil,
-             phoneNumber: String? = nil,
-             externalId: String? = nil) {
+        public init(email: String? = nil,
+                    phoneNumber: String? = nil,
+                    externalId: String? = nil) {
             self.email = email
             self.phoneNumber = phoneNumber
             self.externalId = externalId
@@ -53,30 +45,35 @@ public struct Event: Equatable {
     }
 
     private let _properties: AnyCodable
-    public var profile: [String: Any] {
-        _profile.value as! [String: Any]
-    }
-
-    internal var _profile: AnyCodable
     public var time: Date
     public let value: Double?
     public let uniqueId: String
-    public let identifiers: Identifiers?
+    let identifiers: Identifiers?
+
+    init(name: EventName,
+         properties: [String: Any]? = nil,
+         identifiers: Identifiers? = nil,
+         value: Double? = nil,
+         time: Date? = nil,
+         uniqueId: String? = nil) {
+        metric = .init(name: name)
+        _properties = AnyCodable(properties ?? [:])
+        self.time = time ?? environment.analytics.date()
+        self.value = value
+        self.uniqueId = uniqueId ?? environment.analytics.uuid().uuidString
+        self.identifiers = identifiers
+    }
 
     public init(name: EventName,
                 properties: [String: Any]? = nil,
-                identifiers: Identifiers? = nil,
-                profile: [String: Any]? = nil,
                 value: Double? = nil,
-                time: Date? = nil,
                 uniqueId: String? = nil) {
-        _profile = AnyCodable(profile ?? [:])
         metric = .init(name: name)
         _properties = AnyCodable(properties ?? [:])
+        identifiers = nil
         self.value = value
-        self.time = time ?? environment.analytics.date()
+        time = environment.analytics.date()
         self.uniqueId = uniqueId ?? environment.analytics.uuid().uuidString
-        self.identifiers = identifiers
     }
 }
 
@@ -168,22 +165,31 @@ public struct Profile: Equatable {
 }
 
 extension Event.EventName {
-    var value: String {
+    public var value: String {
         switch self {
         case .OpenedPush: return "$opened_push"
-        case .ViewedProduct: return "$viewed_product"
-        case .SearchedProducts: return "$searched_products"
-        case .StartedCheckout: return "$started_checkout"
-        case .PlacedOrder: return "$placed_order"
-        case .OrderedProduct: return "$ordered_product"
-        case .CancelledOrder: return "$cancelled_order"
-        case .PaidForOrder: return "$paid_for_order"
-        case .SubscribedToBackInStock: return "$subscribed_to_back_in_stock"
-        case .SubscribedToComingSoon: return "$subscribed_to_coming_soon"
-        case .SubscribedToList: return "$subscribed_to_list"
-        case .SuccessfulPayment: return "$successful_payment"
-        case .FailedPayment: return "$failed_payment"
+        case .OpenedAppMetric: return "Opened App"
+        case .ViewedProductMetric: return "Viewed Product"
+        case .AddedToCartMetric: return "Added to Cart"
+        case .StartedCheckoutMetric: return "Started Checkout"
         case let .CustomEvent(value): return "\(value)"
         }
     }
+}
+
+struct ErrorResponse: Codable {
+    let errors: [ErrorDetail]
+}
+
+struct ErrorDetail: Codable {
+    let id: String
+    let status: Int
+    let code: String
+    let title: String
+    let detail: String
+    let source: ErrorSource
+}
+
+struct ErrorSource: Codable {
+    let pointer: String
 }

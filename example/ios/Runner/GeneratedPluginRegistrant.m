@@ -6,8 +6,8 @@
 
 #import "GeneratedPluginRegistrant.h"
 
-#if __has_include(<custom_klaviyo_flutter/KlaviyoFlutterPlugin.h>)
-#import <custom_klaviyo_flutter/KlaviyoFlutterPlugin.h>
+#if __has_include(<custom_klaviyo_flutter/CustomKlaviyoFlutterPlugin.h>)
+#import <custom_klaviyo_flutter/CustomKlaviyoFlutterPlugin.h>
 #else
 @import custom_klaviyo_flutter;
 #endif
@@ -15,7 +15,7 @@
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
-  [KlaviyoFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"KlaviyoFlutterPlugin"]];
+  [CustomKlaviyoFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"CustomKlaviyoFlutterPlugin"]];
 }
 
 @end

@@ -1,4 +1,4 @@
-library klaviyo_flutter;
+library custom_klaviyo_flutter;
 
 import 'dart:async';
 
@@ -118,4 +118,9 @@ class Klaviyo {
   /// @return The phone number of the currently tracked profile, if set
   Future<String?> getPhoneNumber() =>
       KlaviyoFlutterPlatform.instance.getPhoneNumber();
+
+  /// Set the notification listener to listen to the notification events
+/// @param [onNotification] The callback to listen to the notification events
+  Future<void> setNotificationListener(void Function(Map content) onNotification) =>
+      KlaviyoFlutterPlatform.instance.setNotificationListener(onNotification);
 }

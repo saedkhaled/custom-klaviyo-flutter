@@ -1,4 +1,3 @@
-
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../custom_klaviyo_flutter.dart';
@@ -136,5 +135,10 @@ abstract class KlaviyoFlutterPlatform extends PlatformInterface {
   /// @return The phone number of the currently tracked profile, if set
   Future<String?> getPhoneNumber() async {
     throw UnimplementedError('getPhoneNumber() has not been implemented.');
+  }
+
+  /// @return The phone number of the currently tracked profile, if set
+  Future<void> setNotificationListener(void Function(Map content) onNotification) async {
+    throw UnimplementedError('setNotificationListener() has not been implemented.');
   }
 }

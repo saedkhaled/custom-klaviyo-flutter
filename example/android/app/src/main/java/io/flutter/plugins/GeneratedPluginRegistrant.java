@@ -16,9 +16,9 @@ public final class GeneratedPluginRegistrant {
   private static final String TAG = "GeneratedPluginRegistrant";
   public static void registerWith(@NonNull FlutterEngine flutterEngine) {
     try {
-      flutterEngine.getPlugins().add(new com.rightbite.denisr.KlaviyoFlutterPlugin());
+      flutterEngine.getPlugins().add(new klaviyo.saedk.dev.CustomKlaviyoFlutterPlugin());
     } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin custom_klaviyo_flutter, com.rightbite.denisr.KlaviyoFlutterPlugin", e);
+      Log.e(TAG, "Error registering plugin custom_klaviyo_flutter, klaviyo.saedk.dev.CustomKlaviyoFlutterPlugin", e);
     }
   }
 }

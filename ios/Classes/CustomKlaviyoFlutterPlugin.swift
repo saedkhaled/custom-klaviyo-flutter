@@ -3,14 +3,15 @@ import Flutter
 import KlaviyoSwift
 
 /// A class that receives and handles calls from Flutter to complete the payment.
-public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin, UNUserNotificationCenterDelegate {
-  private static let methodChannelName = "com.rightbite.denisr/klaviyo"
+public class CustomKlaviyoFlutterPlugin: NSObject, FlutterPlugin, UNUserNotificationCenterDelegate {
+  private static let methodChannelName = "klaviyo.saedk.dev/klaviyo"
     
   private let METHOD_UPDATE_PROFILE = "updateProfile"
   private let METHOD_INITIALIZE = "initialize"
   private let METHOD_SEND_TOKEN = "sendTokenToKlaviyo"
   private let METHOD_LOG_EVENT = "logEvent"
   private let METHOD_HANDLE_PUSH = "handlePush"
+  private let METHOD_ON_NOTIFICATION = "onNotification"
   private let METHOD_GET_EXTERNAL_ID = "getExternalId"
   private let METHOD_RESET_PROFILE = "resetProfile"
 
@@ -20,26 +21,53 @@ public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin, UNUserNotificationCe
   private let METHOD_GET_PHONE_NUMBER = "getPhoneNumber"
 
   private let klaviyo = KlaviyoSDK()
+  var channel: FlutterMethodChannel? = nil
+  var token: String = ""
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let messenger = registrar.messenger()
     let channel = FlutterMethodChannel(name: methodChannelName, binaryMessenger: messenger)
-    let instance = KlaviyoFlutterPlugin()
+    let instance = CustomKlaviyoFlutterPlugin()
+    instance.channel = channel
 
     if #available(OSX 10.14, *) {
         let center = UNUserNotificationCenter.current()
         center.delegate = instance
     }
-
+      
     registrar.addMethodCallDelegate(instance, channel: channel)
+    registrar.addApplicationDelegate(instance) // THIS IS THE BIG SECRET
   }
 
   // below method will be called when the user interacts with the push notification
   public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-    let handled = KlaviyoSDK().handle(notificationResponse: response, withCompletionHandler: completionHandler)
+    let data: [String:Any] = [
+        "body" : response.notification.request.content.body,
+        "title" : response.notification.request.content.title,
+        "userInfo" : response.notification.request.content.userInfo,
+        "categoryIdentifier" : response.notification.request.content.categoryIdentifier,
+        "actionIdentifier" : response.actionIdentifier,
+        "token" : self.token,
+    ]
+    self.channel?.invokeMethod(METHOD_ON_NOTIFICATION, arguments: data)
+    let handled = klaviyo.handle(notificationResponse: response, withCompletionHandler: completionHandler)
     if !handled {
         completionHandler()
     }
+  }
+
+  public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+//      KlaviyoSDK().initialize(with: "WyR4qS")
+
+      UIApplication.shared.registerForRemoteNotifications()
+
+      return true
+  }
+
+  public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+      let apnDeviceToken = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+      self.token = apnDeviceToken
+      klaviyo.set(pushToken: deviceToken)
   }
 
   // below method is called when the app receives push notifications when the app is the foreground
@@ -58,6 +86,7 @@ public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin, UNUserNotificationCe
         case METHOD_INITIALIZE:
           let arguments = call.arguments as! [String: Any]
           klaviyo.initialize(with: arguments["apiKey"] as! String)
+          UIApplication.shared.registerForRemoteNotifications()
           result("Klaviyo initialized")
 
         case METHOD_SEND_TOKEN:
@@ -116,8 +145,7 @@ public class KlaviyoFlutterPlugin: NSObject, FlutterPlugin, UNUserNotificationCe
 
           if let properties = arguments["message"] as? [String: Any],
             let _ = properties["_k"] {
-              klaviyo.create(event: Event(name: .OpenedPush, properties: properties, profile: [:]))
-
+              klaviyo.create(event: Event(name: .OpenedPush, properties: properties))
               return result(true)
           }
           result(false)

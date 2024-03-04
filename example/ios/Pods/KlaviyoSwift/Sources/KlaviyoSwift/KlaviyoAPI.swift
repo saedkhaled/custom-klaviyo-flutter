@@ -41,6 +41,7 @@ struct KlaviyoAPI {
 
     var send: (KlaviyoRequest) async -> Result<Data, KlaviyoAPIError> = { request in
         let start = Date()
+
         var urlRequest: URLRequest
         do {
             urlRequest = try request.urlRequest()
@@ -50,6 +51,7 @@ struct KlaviyoAPI {
         }
 
         requestStarted(request)
+
         var response: URLResponse
         var data: Data
         do {
@@ -58,20 +60,26 @@ struct KlaviyoAPI {
             requestFailed(request, error, 0.0)
             return .failure(KlaviyoAPIError.networkError(error))
         }
+
         let end = Date()
         let duration = end.timeIntervalSince(start)
+
         guard let httpResponse = response as? HTTPURLResponse else {
             return .failure(.missingOrInvalidResponse(response))
         }
+
         if httpResponse.statusCode == 429 {
             requestRateLimited(request)
             return .failure(KlaviyoAPIError.rateLimitError)
         }
+
         guard 200..<300 ~= httpResponse.statusCode else {
             requestHttpError(request, httpResponse.statusCode, duration)
             return .failure(KlaviyoAPIError.httpError(httpResponse.statusCode, data))
         }
+
         requestCompleted(request, data, duration)
+
         return .success(data)
     }
 }
@@ -94,10 +102,11 @@ extension KlaviyoAPI.KlaviyoRequest {
 
     var url: URL? {
         switch endpoint {
-        case .createProfile, .createEvent:
-            return URL(string: "\(environment.analytics.apiURL)/\(path)/?company_id=\(apiKey)")
-        case .storePushToken:
-            return URL(string: "\(environment.analytics.apiURL)/\(path)")
+        case .createProfile, .createEvent, .registerPushToken, .unregisterPushToken:
+            if !environment.analytics.apiURL.isEmpty {
+                return URL(string: "\(environment.analytics.apiURL)/\(path)/?company_id=\(apiKey)")
+            }
+            return nil
         }
     }
 
@@ -105,10 +114,15 @@ extension KlaviyoAPI.KlaviyoRequest {
         switch endpoint {
         case .createProfile:
             return "client/profiles"
+
         case .createEvent:
             return "client/events"
-        case .storePushToken:
-            return "api/identify"
+
+        case .registerPushToken:
+            return "client/push-tokens"
+
+        case .unregisterPushToken:
+            return "client/push-token-unregister"
         }
     }
 
@@ -116,9 +130,15 @@ extension KlaviyoAPI.KlaviyoRequest {
         switch endpoint {
         case let .createProfile(payload):
             return try environment.analytics.encodeJSON(AnyEncodable(payload))
-        case let .createEvent(payload):
+
+        case var .createEvent(payload):
+            payload.appendMetadataToProperties()
             return try environment.analytics.encodeJSON(AnyEncodable(payload))
-        case let .storePushToken(payload):
+
+        case let .registerPushToken(payload):
+            return try environment.analytics.encodeJSON(AnyEncodable(payload))
+
+        case let .unregisterPushToken(payload):
             return try environment.analytics.encodeJSON(AnyEncodable(payload))
         }
     }

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'klaviyo_flutter_platform_interface.dart';
 import 'klaviyo_profile.dart';
 
-const MethodChannel _channel = MethodChannel('com.rightbite.denisr/klaviyo');
+const MethodChannel _channel = MethodChannel('klaviyo.saedk.dev/klaviyo');
 
 /// An implementation of [KlaviyoFlutterPlatform] that uses method channels.
 class MethodChannelKlaviyoFlutter extends KlaviyoFlutterPlatform {
@@ -46,7 +46,7 @@ class MethodChannelKlaviyoFlutter extends KlaviyoFlutterPlatform {
   @override
   Future<bool> handlePush(Map<String, dynamic> message) async {
     if (!message.values.every((item) => item is String)) {
-      throw new ArgumentError(
+      throw ArgumentError(
           'Klaviyo push messages can only have string values');
     }
 
@@ -60,15 +60,29 @@ class MethodChannelKlaviyoFlutter extends KlaviyoFlutterPlatform {
     return _channel.invokeMethod('getExternalId');
   }
 
+  @override
   Future<void> resetProfile() => _channel.invokeMethod('resetProfile');
 
+  @override
   Future<void> setEmail(String email) =>
       _channel.invokeMethod('setEmail', {'email': email});
 
+  @override
   Future<String?> getEmail() => _channel.invokeMethod('getEmail');
 
+  @override
   Future<void> setPhoneNumber(String phoneNumber) =>
       _channel.invokeMethod('setPhoneNumber', {'phoneNumber': phoneNumber});
 
+  @override
   Future<String?> getPhoneNumber() => _channel.invokeMethod('getPhoneNumber');
+
+  @override
+  Future<void> setNotificationListener(void Function(Map content) onNotification) async {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onNotification') {
+        onNotification(call.arguments);
+      }
+    });
+  }
 }

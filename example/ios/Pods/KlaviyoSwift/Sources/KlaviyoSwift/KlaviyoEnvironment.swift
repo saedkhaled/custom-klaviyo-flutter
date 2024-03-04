@@ -12,22 +12,22 @@ import UIKit
 
 var environment = KlaviyoEnvironment.production
 
-let PRODUCTION_HOST = "https://a.klaviyo.com"
-let encoder = { () -> JSONEncoder in
-    let encoder = JSONEncoder()
-    encoder.dateEncodingStrategy = .iso8601
-    return encoder
-}()
-
-let decoder = { () -> JSONDecoder in
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .iso8601
-    return decoder
-}()
-
-private let reachabilityService = Reachability(hostname: URL(string: PRODUCTION_HOST)!.host!)
-
 struct KlaviyoEnvironment {
+    fileprivate static let productionHost = "https://a.klaviyo.com"
+    static let encoder = { () -> JSONEncoder in
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        return encoder
+    }()
+
+    static let decoder = { () -> JSONDecoder in
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+
+    private static let reachabilityService = Reachability(hostname: URL(string: productionHost)!.host!)
+
     var archiverClient: ArchiverClient
     var fileClient: FileClient
     var data: (URL) throws -> Data
@@ -36,12 +36,16 @@ struct KlaviyoEnvironment {
     var getUserDefaultString: (String) -> String?
     var appLifeCycle: AppLifeCycleEvents
     var notificationCenterPublisher: (NSNotification.Name) -> AnyPublisher<Notification, Never>
+    var getNotificationSettings: (@escaping (KlaviyoState.PushEnablement) -> Void) -> Void
+    var getBackgroundSetting: () -> KlaviyoState.PushBackground
     var legacyIdentifier: () -> String
     var startReachability: () throws -> Void
     var stopReachability: () -> Void
     var reachabilityStatus: () -> Reachability.NetworkStatus?
     var randomInt: () -> Int
     var stateChangePublisher: () -> AnyPublisher<KlaviyoAction, Never>
+    var raiseFatalError: (String) -> Void
+    var emitDeveloperWarning: (String) -> Void
     static var production = KlaviyoEnvironment(
         archiverClient: ArchiverClient.production,
         fileClient: FileClient.production,
@@ -54,6 +58,12 @@ struct KlaviyoEnvironment {
             NotificationCenter.default.publisher(for: name)
                 .eraseToAnyPublisher()
         },
+        getNotificationSettings: { callback in
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                callback(.create(from: settings.authorizationStatus))
+            }
+        },
+        getBackgroundSetting: { .create(from: UIApplication.shared.backgroundRefreshStatus) },
         legacyIdentifier: { "iOS:\(UIDevice.current.identifierForVendor!.uuidString)" },
         startReachability: {
             try reachabilityService?.startNotifier()
@@ -65,7 +75,11 @@ struct KlaviyoEnvironment {
             reachabilityService?.currentReachabilityStatus
         },
         randomInt: { Int.random(in: 0...10) },
-        stateChangePublisher: StateChangePublisher().publisher)
+        stateChangePublisher: StateChangePublisher().publisher, raiseFatalError: { msg in
+            #if DEBUG
+            fatalError(msg)
+            #endif
+        }, emitDeveloperWarning: { runtimeWarn($0) })
 }
 
 private var networkSession: NetworkSession!
@@ -86,7 +100,7 @@ struct DataDecoder {
     }
 
     var jsonDecoder: JSONDecoder
-    static let production = Self(jsonDecoder: decoder)
+    static let production = Self(jsonDecoder: KlaviyoEnvironment.decoder)
 }
 
 struct AnalyticsEnvironment {
@@ -107,8 +121,8 @@ struct AnalyticsEnvironment {
         let store = Store.production
         return AnalyticsEnvironment(
             networkSession: createNetworkSession,
-            apiURL: PRODUCTION_HOST,
-            encodeJSON: { encodable in try encoder.encode(encodable) },
+            apiURL: KlaviyoEnvironment.productionHost,
+            encodeJSON: { encodable in try KlaviyoEnvironment.encoder.encode(encodable) },
             decoder: DataDecoder.production,
             uuid: { UUID() },
             date: { Date() },

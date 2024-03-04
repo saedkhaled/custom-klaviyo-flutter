@@ -178,17 +178,17 @@ code_sign_if_enabled() {
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/AnyCodable-FlightSchool/AnyCodable.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/KlaviyoSwift/KlaviyoSwift.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/klaviyo_flutter/klaviyo_flutter.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/custom_klaviyo_flutter/custom_klaviyo_flutter.framework"
 fi
 if [[ "$CONFIGURATION" == "Profile" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/AnyCodable-FlightSchool/AnyCodable.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/KlaviyoSwift/KlaviyoSwift.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/klaviyo_flutter/klaviyo_flutter.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/custom_klaviyo_flutter/custom_klaviyo_flutter.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/AnyCodable-FlightSchool/AnyCodable.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/KlaviyoSwift/KlaviyoSwift.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/klaviyo_flutter/klaviyo_flutter.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/custom_klaviyo_flutter/custom_klaviyo_flutter.framework"
 fi
 if [ "${COCOAPODS_PARALLEL_CODE_SIGN}" == "true" ]; then
   wait

@@ -36,10 +36,10 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.rightbite.denisr
-        pluginClass: KlaviyoFlutterPlugin
+        package: klaviyo.saedk.dev
+        pluginClass: CustomKlaviyoFlutterPlugin
       ios:
-        pluginClass: KlaviyoFlutterPlugin
+        pluginClass: CustomKlaviyoFlutterPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
