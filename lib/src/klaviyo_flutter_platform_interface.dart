@@ -137,8 +137,14 @@ abstract class KlaviyoFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('getPhoneNumber() has not been implemented.');
   }
 
-  /// @return The phone number of the currently tracked profile, if set
+  /// Set the notification listener to receive the notification content.
   Future<void> setNotificationListener(void Function(Map content) onNotification) async {
     throw UnimplementedError('setNotificationListener() has not been implemented.');
+  }
+
+  /// Set the app launch listener to receive the app launch content.
+  /// needs to be called in the main method to make sure the SDK is initialized on app launch.
+  Future<void> setOnAppLaunchListener(void Function() onAppLaunch) async {
+    throw UnimplementedError('onAppLaunch() has not been implemented.');
   }
 }

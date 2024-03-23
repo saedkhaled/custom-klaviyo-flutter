@@ -85,4 +85,13 @@ class MethodChannelKlaviyoFlutter extends KlaviyoFlutterPlatform {
       }
     });
   }
+
+  @override
+  Future<void> setOnAppLaunchListener(void Function() onAppLaunch) async {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onAppLaunch') {
+        onAppLaunch();
+      }
+    });
+  }
 }

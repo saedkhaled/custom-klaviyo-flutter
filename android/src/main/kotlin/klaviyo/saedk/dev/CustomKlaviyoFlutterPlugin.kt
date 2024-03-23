@@ -31,6 +31,7 @@ private const val METHOD_SEND_TOKEN = "sendTokenToKlaviyo"
 private const val METHOD_LOG_EVENT = "logEvent"
 private const val METHOD_HANDLE_PUSH = "handlePush"
 private const val METHOD_ON_NOTIFICATION = "onNotification"
+private const val METHOD_ON_APP_LAUNCH = "onAppLaunch"
 private const val METHOD_GET_EXTERNAL_ID = "getExternalId"
 private const val METHOD_RESET_PROFILE = "resetProfile"
 private const val METHOD_SET_EMAIL = "setEmail"
@@ -51,6 +52,7 @@ class CustomKlaviyoFlutterPlugin : MethodCallHandler, FlutterPlugin, ActivityAwa
         applicationContext = binding.applicationContext
         channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME)
         channel.setMethodCallHandler(this)
+        channel.invokeMethod(METHOD_ON_APP_LAUNCH, null)
         if (applicationContext is Application) {
             val app = applicationContext as Application
             app.registerActivityLifecycleCallbacks(Klaviyo.lifecycleCallbacks)

@@ -123,4 +123,9 @@ class Klaviyo {
 /// @param [onNotification] The callback to listen to the notification events
   Future<void> setNotificationListener(void Function(Map content) onNotification) =>
       KlaviyoFlutterPlatform.instance.setNotificationListener(onNotification);
+
+  /// Set the on app launch listener to listen to the app launch events
+/// @param [onAppLaunch] The callback to listen to the app launch events
+  Future<void> setOnAppLaunchListener(void Function() onAppLaunch) =>
+      KlaviyoFlutterPlatform.instance.setOnAppLaunchListener(onAppLaunch);
 }
