@@ -144,7 +144,7 @@ abstract class KlaviyoFlutterPlatform extends PlatformInterface {
 
   /// Set the app launch listener to receive the app launch content.
   /// needs to be called in the main method to make sure the SDK is initialized on app launch.
-  Future<void> setOnAppLaunchListener(void Function() onAppLaunch) async {
+  Future<void> setOnAppLaunchListener(void Function(Map content) onAppLaunch) async {
     throw UnimplementedError('onAppLaunch() has not been implemented.');
   }
 }

@@ -59,7 +59,7 @@ public class CustomKlaviyoFlutterPlugin: NSObject, FlutterPlugin, UNUserNotifica
 
   public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 //      KlaviyoSDK().initialize(with: "WyR4qS")
-      self.channel?.invokeMethod(METHOD_ON_APP_LAUNCH, arguments: nil)
+      self.channel?.invokeMethod(METHOD_ON_APP_LAUNCH, arguments: [])
       UIApplication.shared.registerForRemoteNotifications()
 
       return true

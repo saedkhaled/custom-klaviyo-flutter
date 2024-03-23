@@ -9,10 +9,20 @@ const MethodChannel _channel = MethodChannel('klaviyo.saedk.dev/klaviyo');
 
 /// An implementation of [KlaviyoFlutterPlatform] that uses method channels.
 class MethodChannelKlaviyoFlutter extends KlaviyoFlutterPlatform {
+  void Function(Map content)? _onNotification;
+  void Function(Map content)? _onAppLaunch;
+
   @override
   Future<void> initialize(String apiKey) async {
     await _channel.invokeMethod('initialize', {
       'apiKey': apiKey,
+    });
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onNotification') {
+        _onNotification?.call(call.arguments);
+      } else if (call.method == 'onAppLaunch') {
+        _onAppLaunch?.call(call.arguments);
+      }
     });
   }
 
@@ -79,19 +89,11 @@ class MethodChannelKlaviyoFlutter extends KlaviyoFlutterPlatform {
 
   @override
   Future<void> setNotificationListener(void Function(Map content) onNotification) async {
-    _channel.setMethodCallHandler((call) async {
-      if (call.method == 'onNotification') {
-        onNotification(call.arguments);
-      }
-    });
+    _onNotification = onNotification;
   }
 
   @override
-  Future<void> setOnAppLaunchListener(void Function() onAppLaunch) async {
-    _channel.setMethodCallHandler((call) async {
-      if (call.method == 'onAppLaunch') {
-        onAppLaunch();
-      }
-    });
+  Future<void> setOnAppLaunchListener(void Function(Map content) onAppLaunch) async {
+    _onAppLaunch = onAppLaunch;
   }
 }

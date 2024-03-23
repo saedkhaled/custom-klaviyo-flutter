@@ -52,7 +52,7 @@ class CustomKlaviyoFlutterPlugin : MethodCallHandler, FlutterPlugin, ActivityAwa
         applicationContext = binding.applicationContext
         channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME)
         channel.setMethodCallHandler(this)
-        channel.invokeMethod(METHOD_ON_APP_LAUNCH, null)
+        channel.invokeMethod(METHOD_ON_APP_LAUNCH, {})
         if (applicationContext is Application) {
             val app = applicationContext as Application
             app.registerActivityLifecycleCallbacks(Klaviyo.lifecycleCallbacks)
